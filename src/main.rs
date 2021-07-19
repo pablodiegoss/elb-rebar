@@ -12,10 +12,12 @@ struct Cli {
 
 fn main() {
     let args = Cli::from_args();
-    let content = std::fs::read_to_string(&args.path)
-        .expect("could not read file");
-    for line in content.lines() {
-        println!("{}", line);
+    let f = BufReader::new(File::open(&args.path).expect("could not read file"));
+
+    for line in f.lines() {
+        for value in line.unwrap().split(' ') {
+            println!("{}", value);
+        }
     }
     println!("Hello, world!");
 }
