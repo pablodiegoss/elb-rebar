@@ -24,7 +24,7 @@ struct Log {
     target_status_code: i32,
     received_bytes: i64,    // The size of the request, in bytes.
     sent_bytes: i64,        // The size of the response, in bytes.
-    request_string: String, // enclosed in double quotes. formatted as HTTP method + protocol://host:port/uri + HTTP version eg. "POST https://example.com.br:443/url1/ HTTP/2.0"
+    request_string: String, //double quotes. formatted as HTTP method + protocol://host:port/uri + HTTP version eg. "POST https://example.com.br:443/url1/ HTTP/2.0"
     user_agent: String,     // enclosed in double quotes.
     ssl_cipher: String,
     ssl_protocol: String,
@@ -37,7 +37,8 @@ struct Log {
     actions_executed: String,      // enclosed in double quotes
     redirect_url: String,          // enclosed in double quotes
     error_reason: String,          //enclosed in double quotes
-    target_list: String,           //enclosed in double quotes
+    targets_list: String,           //enclosed in double quotes
+    targets_status_code_list: String,//enclosed in double quotes
     classification: String,        //enclosed in double quotes
     classification_reason: String, //enclosed in double quotes
 }
@@ -48,6 +49,7 @@ fn main() {
     let re = Regex::new(r#""([^"])*"|\s"#).unwrap();
 
     for line in f.lines() {
+        println!("\n");
         for value in line
             .unwrap()
             .split_inclusive(&re)
