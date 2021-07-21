@@ -42,7 +42,7 @@ pub fn create_log(mut log_values: Vec<String>) -> Log {
         target_processing_time: log_values.remove(0).parse::<f32>().unwrap(),
         response_processing_time: log_values.remove(0).parse::<f32>().unwrap(),
         elb_status_code: log_values.remove(0).parse::<i32>().unwrap(),
-        target_status_code: log_values.remove(0).parse::<i32>().unwrap(),
+        target_status_code: log_values.remove(0).parse::<i32>().unwrap_or_else(|err|-1),
         received_bytes: log_values.remove(0).parse::<i64>().unwrap(),
         sent_bytes: log_values.remove(0).parse::<i64>().unwrap(),
         request_string: log_values.remove(0),
