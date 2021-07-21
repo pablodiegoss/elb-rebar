@@ -8,3 +8,4 @@ edition = "2018"
 [dependencies]
 structopt = "0.3.13"
 regex = { version = "1", features = ["pattern"]}
+itertools = "0.10.0"

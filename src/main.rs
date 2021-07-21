@@ -2,9 +2,11 @@ use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use structopt::StructOpt;
+use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use log::{create_log, Log};
+use itertools::sorted;
 pub mod log;
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(StructOpt)]
@@ -27,6 +29,16 @@ impl Eq for UrlCount{}
 impl Hash for UrlCount {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.url.hash(state);
+    }
+}
+impl Ord for UrlCount{
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.count.cmp(&other.count)
+    }
+}
+impl PartialOrd for UrlCount {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -58,8 +70,7 @@ fn main() {
         }
     }
     
-    for url_count in log_set{
+    for url_count in sorted(log_set){
         println!("Count: {} - URL:{} ", url_count.count, url_count.url);
-
     }
 }
