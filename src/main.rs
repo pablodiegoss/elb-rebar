@@ -21,7 +21,7 @@ fn get_log_paths(mut file_paths: Vec<PathBuf>, path:&PathBuf) -> Vec<PathBuf>{
     let md = metadata(path).unwrap();
     println!("is dir: {}", md.is_dir());
     println!("is file: {}", md.is_file());
-    if (md.is_file()){
+    if md.is_file() {
         file_paths.push(path.to_path_buf());
         file_paths
     }else{
@@ -67,7 +67,8 @@ fn main() {
             let url_info = UrlCount{url:log.request_string, count:1};
             if log_set.contains(&url_info){
                 let actual_info = log_set.get(&url_info).expect("what");
-                log_set.replace(UrlCount{url:url_info.url, count:actual_info.count + 1});
+                let new_info = UrlCount{url:url_info.url, count:actual_info.count + 1};
+                log_set.replace(new_info);
             }else{
                 log_set.insert(url_info);
             }

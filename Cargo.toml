@@ -7,6 +7,6 @@ edition = "2018"
 
 [dependencies]
 structopt = "0.3.13"
-regex = { version = "1", features = ["pattern"]}
+regex = { version = "1.5.4", features = ["pattern"]}
 itertools = "0.10.1"
 walkdir = "2.3.1"
