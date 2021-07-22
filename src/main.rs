@@ -40,28 +40,37 @@ fn get_log_paths(mut file_paths: Vec<PathBuf>, path:&PathBuf) -> Vec<PathBuf>{
     }
 }
 
+fn convert_lines_to_logs(file_path: &PathBuf) -> Vec<Log>{
+    let mut logs: Vec<Log> = Vec::new();
+    let log_regex = Regex::new(r#""([^"])*"|\s"#).unwrap();    
+
+    let f = BufReader::new(File::open(file_path).expect("could not read file"));
+    for line in f.lines() {
+        let log_values = line
+        .unwrap()
+        .split_inclusive(&log_regex)
+        .map(|x| x.trim().replace('"', ""))
+        .filter(|x| x != "")
+        .collect::<Vec<String>>();
+        let log = create_log(log_values);
+        logs.push(log);
+    }
+    logs
+}
+
 fn main() {
+    // let ncpus = num_cpus::get();
+    // let thread_pool = ThreadPool::new(ncpus*2);
+    // thread_pool.
     let total_results = 10;
     let args = Cli::from_args();
     let mut file_paths = Vec::<PathBuf>::new();
-    let log_regex = Regex::new(r#""([^"])*"|\s"#).unwrap();
     file_paths = get_log_paths(file_paths, &args.path);
     let mut log_set = HashSet::<UrlCount>::new();
+    
     for file in file_paths{
-        let f = BufReader::new(File::open(file).expect("could not read file"));
         
-        let mut logs: Vec<Log> = Vec::new();
-        
-        for line in f.lines() {
-            let log_values = line
-            .unwrap()
-            .split_inclusive(&log_regex)
-            .map(|x| x.trim().replace('"', ""))
-            .filter(|x| x != "")
-            .collect::<Vec<String>>();
-            let log = create_log(log_values);
-            logs.push(log);
-        }
+        let logs = convert_lines_to_logs(&file);
         
         for log in logs{
             let url_info = UrlCount{url:log.request_string, count:1};
