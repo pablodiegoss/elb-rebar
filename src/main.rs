@@ -41,6 +41,7 @@ fn get_log_paths(mut file_paths: Vec<PathBuf>, path:&PathBuf) -> Vec<PathBuf>{
 }
 
 fn main() {
+    let total_results = 10;
     let args = Cli::from_args();
     let mut file_paths = Vec::<PathBuf>::new();
     let log_regex = Regex::new(r#""([^"])*"|\s"#).unwrap();
@@ -72,7 +73,8 @@ fn main() {
             }
         }        
     }
-    for url_count in sorted(log_set){
+    let result:Vec<UrlCount> = sorted(log_set).collect();
+    for url_count in &result[result.len()-total_results..]{
         println!("Count: {} - URL:{} ", url_count.count, url_count.url);
     }
     
