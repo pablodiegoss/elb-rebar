@@ -1,3 +1,6 @@
+use std::cmp::Ordering;
+use std::hash::{Hash, Hasher};
+
 #[derive(Debug)]
 pub struct Log {
     pub request_type: String, // http, https, h2
@@ -31,6 +34,33 @@ pub struct Log {
     pub classification_reason: String,    //enclosed in double quotes
 }
 
+#[derive(Debug)]
+pub struct UrlCount {
+    pub url:String,
+    pub count: i64
+}
+impl PartialEq for UrlCount{
+    fn eq(&self, other: &Self) -> bool {
+        self.url == other.url
+    }
+}
+impl Eq for UrlCount{}
+impl Hash for UrlCount {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.url.hash(state);
+    }
+}
+impl Ord for UrlCount{
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.count.cmp(&other.count)
+    }
+}
+impl PartialOrd for UrlCount {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 pub fn create_log(mut log_values: Vec<String>) -> Log {
     Log {
         request_type: log_values.remove(0),
@@ -53,7 +83,7 @@ pub fn create_log(mut log_values: Vec<String>) -> Log {
         x_amazn_trace_id: log_values.remove(0),
         sni_domain_name: log_values.remove(0),
         cert_arn: log_values.remove(0),
-        matched_rule_priority: log_values.remove(0).parse::<i32>().unwrap(),
+        matched_rule_priority: log_values.remove(0).parse::<i32>().unwrap_or_else(|err|-1),
         request_creation_time: log_values.remove(0),
         actions_executed: log_values.remove(0),
         redirect_url: log_values.remove(0),

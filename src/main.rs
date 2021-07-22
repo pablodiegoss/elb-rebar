@@ -2,10 +2,8 @@ use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use structopt::StructOpt;
-use std::cmp::Ordering;
 use std::collections::HashSet;
-use std::hash::{Hash, Hasher};
-use log::{create_log, Log};
+use log::{create_log, Log, UrlCount};
 use itertools::sorted;
 pub mod log;
 /// Search for a pattern in a file and display the lines that contain it.
