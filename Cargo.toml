@@ -10,3 +10,5 @@ structopt = "0.3.13"
 regex = { version = "1.5.4", features = ["pattern"]}
 itertools = "0.10.1"
 walkdir = "2.3.1"
+num_cpus = "1.13.0"
+threadpool = "1.8.1"
