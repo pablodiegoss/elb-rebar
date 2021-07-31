@@ -2,8 +2,8 @@ use itertools::sorted;
 use log::{create_log, Log, UrlCount};
 use regex::Regex;
 use std::collections::HashSet;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+// use std::fs::File;
+// use std::io::{BufRead, BufReader};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use structopt::StructOpt;
@@ -14,7 +14,6 @@ use walkdir::WalkDir;
 extern crate num_cpus;
 extern crate threadpool;
 use std::fs;
-use std::thread;
 use threadpool::ThreadPool;
 
 /// Search for a pattern in a file and display the lines that contain it.
@@ -48,22 +47,28 @@ fn get_log_paths(mut file_paths: Vec<PathBuf>, path: &PathBuf) -> Vec<PathBuf> {
         file_paths
     }
 }
+fn convert_lines_to_logs(file_path: &PathBuf) -> Vec<Log> {
+    let log_regex = Regex::new(r#""([^"])*"|\s"#).unwrap();
 
-fn convert_lines_to_logs(file_path: &PathBuf) -> Vec<Log>{
-    let mut logs: Vec<Log> = Vec::new();
-    let log_regex = Regex::new(r#""([^"])*"|\s"#).unwrap();    
+    let time = Instant::now();
+    println!("Starting - {}", time.elapsed().as_millis());
+    // let f = BufReader::new(File::open(file_path).expect("iasdjdsaij"));
+    let f = fs::read_to_string(file_path).expect("could not read file");
 
-    let f = BufReader::new(File::open(file_path).expect("could not read file"));
-    for line in f.lines() {
-        let log_values = line
-        .unwrap()
-        .split_inclusive(&log_regex)
-        .map(|x| x.trim().replace('"', ""))
-        .filter(|x| x != "")
-        .collect::<Vec<String>>();
-        let log = create_log(log_values);
-        logs.push(log);
-    }
+    // let time2 = Instant::now();
+    let logs = f
+        .lines()
+        .map(|line| {
+            // println!("Starting Regex 2 {}", time2.elapsed().as_millis());
+            line.split_inclusive(&log_regex)
+                .map(|x| x.trim().replace('"', ""))
+                .filter(|x| x != "")
+                .collect::<Vec<String>>()
+        })
+        .map(|string_vec| create_log(string_vec))
+        .collect::<Vec<Log>>();
+
+    println!("Finished all lines in : {}ms", time.elapsed().as_millis());
     logs
 }
 fn main() {
@@ -77,7 +82,7 @@ fn main() {
     let mut file_paths = Vec::<PathBuf>::new();
     file_paths = get_log_paths(file_paths, &args.path);
     let mut log_set = HashSet::<UrlCount>::new();
-    let mut all_logs = Arc::new(Mutex::new(Vec::<Vec<Log>>::new()));
+    let all_logs = Arc::new(Mutex::new(Vec::<Vec<Log>>::new()));
     for file in file_paths {
         let all_logs = Arc::clone(&all_logs);
         thread_pool.execute(move || {
