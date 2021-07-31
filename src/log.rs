@@ -36,21 +36,21 @@ pub struct Log {
 
 #[derive(Debug)]
 pub struct UrlCount {
-    pub url:String,
-    pub count: i64
+    pub url: String,
+    pub count: i64,
 }
-impl PartialEq for UrlCount{
+impl PartialEq for UrlCount {
     fn eq(&self, other: &Self) -> bool {
         self.url == other.url
     }
 }
-impl Eq for UrlCount{}
+impl Eq for UrlCount {}
 impl Hash for UrlCount {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.url.hash(state);
     }
 }
-impl Ord for UrlCount{
+impl Ord for UrlCount {
     fn cmp(&self, other: &Self) -> Ordering {
         self.count.cmp(&other.count)
     }
@@ -72,7 +72,10 @@ pub fn create_log(mut log_values: Vec<String>) -> Log {
         target_processing_time: log_values.remove(0).parse::<f32>().unwrap(),
         response_processing_time: log_values.remove(0).parse::<f32>().unwrap(),
         elb_status_code: log_values.remove(0).parse::<i32>().unwrap(),
-        target_status_code: log_values.remove(0).parse::<i32>().unwrap_or_else(|_err|-1),
+        target_status_code: log_values
+            .remove(0)
+            .parse::<i32>()
+            .unwrap_or_else(|_err| -1),
         received_bytes: log_values.remove(0).parse::<i64>().unwrap(),
         sent_bytes: log_values.remove(0).parse::<i64>().unwrap(),
         request_string: log_values.remove(0),
@@ -83,7 +86,10 @@ pub fn create_log(mut log_values: Vec<String>) -> Log {
         x_amazn_trace_id: log_values.remove(0),
         sni_domain_name: log_values.remove(0),
         cert_arn: log_values.remove(0),
-        matched_rule_priority: log_values.remove(0).parse::<i32>().unwrap_or_else(|_err|-1),
+        matched_rule_priority: log_values
+            .remove(0)
+            .parse::<i32>()
+            .unwrap_or_else(|_err| -1),
         request_creation_time: log_values.remove(0),
         actions_executed: log_values.remove(0),
         redirect_url: log_values.remove(0),
