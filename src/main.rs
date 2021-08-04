@@ -1,13 +1,9 @@
-use itertools::sorted;
-use log::{create_log, Log, UrlCount};
-use regex::Regex;
-use std::collections::HashSet;
-// use std::fs::File;
-// use std::io::{BufRead, BufReader};
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use structopt::StructOpt;
 pub mod log;
+use log::Log;
 use std::fs::metadata;
 use std::path::PathBuf;
 use walkdir::WalkDir;
@@ -47,90 +43,62 @@ fn get_log_paths(mut file_paths: Vec<PathBuf>, path: &PathBuf) -> Vec<PathBuf> {
         file_paths
     }
 }
-fn convert_lines_to_logs(file_path: &PathBuf) -> Vec<Log> {
-    let log_regex = Regex::new(r#""([^"])*"|\s"#).unwrap();
 
-    let time = Instant::now();
-    println!("Starting - {}", time.elapsed().as_millis());
-    // let f = BufReader::new(File::open(file_path).expect("iasdjdsaij"));
-    let f = fs::read_to_string(file_path).expect("could not read file");
-
-    // let time2 = Instant::now();
-    let logs = f
-        .lines()
-        .map(|line| {
-            // println!("Starting Regex 2 {}", time2.elapsed().as_millis());
-            line.split_inclusive(&log_regex)
-                .map(|x| x.trim().replace('"', ""))
-                .filter(|x| x != "")
-                .collect::<Vec<String>>()
-        })
-        .map(|string_vec| create_log(string_vec))
-        .collect::<Vec<Log>>();
-
-    println!("Finished all lines in : {}ms", time.elapsed().as_millis());
-    logs
-}
 fn main() {
     let ncpus = num_cpus::get();
     let thread_pool = ThreadPool::new(ncpus * 2);
     let time = Instant::now();
     println!("Starting - {}", time.elapsed().as_millis());
     // thread_pool.
-    let total_results = 10;
     let args = Cli::from_args();
+    let log_map = Arc::new(Mutex::new(HashMap::<String, u64>::new()));
     let mut file_paths = Vec::<PathBuf>::new();
     file_paths = get_log_paths(file_paths, &args.path);
-    let mut log_set = HashSet::<UrlCount>::new();
-    let all_logs = Arc::new(Mutex::new(Vec::<Vec<Log>>::new()));
-    for file in file_paths {
-        let all_logs = Arc::clone(&all_logs);
+
+    for path in file_paths {
+        let all_logs = Arc::clone(&log_map);
         thread_pool.execute(move || {
-            println!("Initializing work on {:?}", file);
-            let thread_logs = convert_lines_to_logs(&file);
-            all_logs.lock().unwrap().push(thread_logs);
+            let mut thread_log_map = HashMap::<String, u64>::new();
+            // println!("Initializing work on {:?}", path);
+            // let time = Instant::now();
+            let f = fs::read_to_string(path).expect("could not read file");
+            f.lines().for_each(|line| {
+                // let log = line_to_log(line).collect::<Log>();
+                // let log = line.split_inclusive(&log_regex).collect::<Log>();
+                let log = line.split(" ").collect::<Log>();
+
+                thread_log_map
+                    .entry(format!(
+                        "{} {} {}",
+                        log.request_method, log.request_url, log.request_http_version
+                    ))
+                    .and_modify(|e| *e += 1)
+                    .or_insert(1);
+            });
+
+            for (key, value) in thread_log_map.iter() {
+                all_logs
+                    .lock()
+                    .unwrap()
+                    .entry(key.to_owned())
+                    .and_modify(|e| *e += value)
+                    .or_insert(*value);
+            }
+            // println!("Finished work : {}ms", time.elapsed().as_millis());
         });
-        // let logs = convert_lines_to_logs(&file);
     }
+
     thread_pool.join();
     println!(
         "Threads joining finished in : {}ms",
         time.elapsed().as_millis()
     );
-    let mut logs = Vec::<Log>::new();
-    for mut log_vec in all_logs.lock().unwrap().drain(..) {
-        logs.append(&mut log_vec);
-    }
-    println!(
-        "Joining vecs finished in : {}ms",
-        time.elapsed().as_millis()
-    );
-    for log in logs {
-        let url_info = UrlCount {
-            url: log.request_string,
-            count: 1,
-        };
-        if log_set.contains(&url_info) {
-            let actual_info = log_set.get(&url_info).expect("what");
-            let new_info = UrlCount {
-                url: url_info.url,
-                count: actual_info.count + 1,
-            };
-            log_set.replace(new_info);
-        } else {
-            log_set.insert(url_info);
-        }
-    }
-    println!("URL counts finished in : {}ms", time.elapsed().as_millis());
-    let result: Vec<UrlCount> = sorted(log_set).collect();
-    let print_size = if result.len() > total_results {
-        result.len() - total_results
-    } else {
-        0
-    };
+    let all_logs = log_map.lock().unwrap();
+    let mut count_vec: Vec<(&String, &u64)> = all_logs.iter().collect();
+    count_vec.sort_by(|a, b| a.1.cmp(b.1));
 
-    for url_count in &result[print_size..] {
-        println!("Count: {} - URL:{} ", url_count.count, url_count.url);
+    for (url, count) in count_vec {
+        println!("Count: {} - URL: {}", count, url);
     }
     println!("Finished in : {}ms", time.elapsed().as_millis());
 }
