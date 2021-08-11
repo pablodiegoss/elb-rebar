@@ -1,13 +1,13 @@
 [package]
 name = "elb-rebar"
-version = "0.0.2"
+version = "0.0.1"
 edition = "2018"
 license = "GPL-3.0-or-later"
 readme = "README.md"
 description = "A parallel AWS Elastic Load Balancing log analyzer for quick statistics on web requests"
 repository = "https://github.com/pablodiegoss/elb-rebar"
 authors=["Pablo Silva <pablodiegoss@hotmail.com>", "Rodrigo Oliveira <rodrigo.redcode@gmail.com>"]
-keywords = ["AWS", "ELB", "log", "load balancer"]
+keywords = ["AWS", "ELB", "logs"]
 categories = ["command-line-utilities"]
 exclude = ["examples/"]
 
