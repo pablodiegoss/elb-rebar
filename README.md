@@ -5,7 +5,7 @@ Rebar is parallel and focused on performance, this allows the user to analyze mo
 
 ## Build
 
-Cargo provides all the basic installation and usage for this repository. For instructions on installing Rust and Cargo [click here](https://www.rust-lang.org/tools/install) 
+Cargo provides all the basic installation and usage for this repository. For instructions on installing Rust and Cargo [click here](https://www.rust-lang.org/tools/install)  
 Building:  
 ```bash
     cargo build
@@ -13,21 +13,39 @@ Building:
 
 To execute Rebar from this repository you can pass arguments through `cargo`, we accept a direct log file or folder:
 ```bash
-    cargo run -- examples/example1.log
-    cargo run -- examples/
+$ cargo run -- examples/example1.log
+$ cargo run -- examples/
 ```
 ## Installation & Usage
 
 You can install Rebar through `cargo`:
 ```bash
-    cargo install elb-rebar
+$ cargo install elb-rebar
 ```
 
 We have `/examples/` for you to test during development or after installation:
 
 ```bash
-    elb-rebar examples/
-    elb-rebar examples/example1.log
+$ elb-rebar examples/
+$ elb-rebar examples/example1.log
 ```
 
 Rebar will count and list all requests registered in your log file or folder (recursively).
+
+#### Example output
+```
+$ elb-rebar examples/
+-- Checking files to process --
+-- Starting to process 4 files --
+
+
+-- Results --
+#  - Count - URL
+1  - 14043 - "POST https://example.com.br:443/url2/
+2  - 638   - "POST https://example.com.br:443/url5/
+3  - 550   - "POST https://example.com.br:443/url1/
+4  - 528   - "POST https://example.com.br:443/url3/
+5  - 94    - "POST https://example.com.br:443/url4/
+
+Finished in : 174ms
+```
