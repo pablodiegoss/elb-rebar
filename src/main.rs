@@ -18,6 +18,8 @@ struct Cli {
     /// The path to the file to read
     #[structopt(parse(from_os_str))]
     path: std::path::PathBuf,
+    #[structopt(default_value = "20", short = "l", long = "limit")]
+    limit: i32
 }
 
 fn get_log_paths(mut file_paths: Vec<PathBuf>, path: &PathBuf) -> Vec<PathBuf> {
@@ -92,6 +94,10 @@ fn main() {
     println!("\n\n-- Results --");
     println!("{:<2} - {:<5} - {:<3}", "#", "Count", "URL");
     for (i, (url, count)) in count_vec.iter().enumerate() {
+        if i as i32 == args.limit && args.limit < count_vec.len() as i32 {
+            println!("\n... {} omitted.\nTo see more results use -l or --limit to a desired value.", count_vec.len() - i );
+            break;
+        }
     
         println!("{:<2} - {:<5} - {}",i+1, count, url);
     }
