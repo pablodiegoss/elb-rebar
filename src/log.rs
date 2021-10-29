@@ -1,6 +1,8 @@
-use std::cmp::Ordering;
-use std::hash::{Hash, Hasher};
-use std::iter::FromIterator;
+use std::{
+    cmp::Ordering,
+    hash::{Hash, Hasher},
+    iter::FromIterator,
+};
 
 #[derive(Debug)]
 pub struct Log<'a> {
