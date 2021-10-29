@@ -4,16 +4,14 @@ use std::{
     collections::HashMap,
     fs,
     fs::metadata,
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::Instant,
 };
 
 use log::Log;
 
-use num_cpus;
 use structopt::StructOpt;
-use threadpool;
 use threadpool::ThreadPool;
 use walkdir::WalkDir;
 
@@ -27,7 +25,7 @@ struct Cli {
     limit: i32,
 }
 
-fn get_log_paths(mut file_paths: Vec<PathBuf>, path: &PathBuf) -> Vec<PathBuf> {
+fn get_log_paths(mut file_paths: Vec<PathBuf>, path: &Path) -> Vec<PathBuf> {
     let md = metadata(path).unwrap();
     if md.is_file() {
         file_paths.push(path.to_path_buf());
@@ -68,7 +66,7 @@ fn main() {
 
             let f = fs::read_to_string(path).expect("could not read file");
             f.lines().for_each(|line| {
-                let log = line.split(" ").collect::<Log>();
+                let log = line.split(' ').collect::<Log>();
 
                 thread_log_map
                     .entry(format!("{} {}", log.request_method, log.request_url))
