@@ -1,35 +1,20 @@
 pub mod log;
+pub mod utils;
 
 use std::{
-    borrow::Cow,
     collections::HashMap,
     fs,
-    fs::metadata,
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::{Arc, Mutex},
     time::Instant,
 };
 
 use log::Log;
+use utils::*;
 
-use chrono::{format::ParseResult, NaiveTime, TimeZone, Utc};
-use regex::Regex;
+use chrono::NaiveTime;
 use structopt::StructOpt;
 use threadpool::ThreadPool;
-use walkdir::WalkDir;
-
-#[derive(Debug, Clone)]
-struct ParseTimeError;
-
-impl std::fmt::Display for ParseTimeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "invalid time")
-    }
-}
-
-fn from_time(src: &str) -> ParseResult<NaiveTime> {
-    NaiveTime::parse_from_str(src, "%H%M")
-}
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(StructOpt)]
@@ -43,57 +28,6 @@ struct Cli {
     init_time: Option<NaiveTime>,
     #[structopt(short = "et", long = "end_time", parse(try_from_str = from_time))]
     end_time: Option<NaiveTime>,
-}
-
-fn validate_time(
-    file_name: Cow<'_, str>,
-    init_time: &Option<NaiveTime>,
-    end_time: &Option<NaiveTime>,
-) -> bool {
-    let mut result = !(init_time.is_some() || end_time.is_some());
-    let re = Regex::new(r"\d{8}T\d{4}Z").unwrap();
-    let captures = re.captures_iter(&file_name);
-
-    if let Some(c) = &captures.last() {
-        let datetime = Utc.datetime_from_str(&c[0], "%Y%m%dT%H%MZ").unwrap();
-
-        if init_time.is_some() {
-            result = datetime.time() >= init_time.unwrap();
-        }
-
-        if end_time.is_some() {
-            result = datetime.time() <= end_time.unwrap();
-        }
-    }
-
-    result
-}
-
-fn get_log_paths(
-    mut file_paths: Vec<PathBuf>,
-    path: &Path,
-    init_time: &Option<NaiveTime>,
-    end_time: &Option<NaiveTime>,
-) -> Vec<PathBuf> {
-    let md = metadata(path).unwrap();
-    if md.is_file() {
-        file_paths.push(path.to_path_buf());
-        file_paths
-    } else {
-        for entry in WalkDir::new(path)
-            .follow_links(true)
-            .into_iter()
-            .filter_map(|e| e.ok())
-        {
-            let f_name = entry.file_name().to_string_lossy();
-            if f_name.ends_with(".log") && validate_time(f_name, init_time, end_time) {
-                // println!("{}", f_name);
-                // println!("{:?}", entry.path());
-                file_paths.push(entry.path().to_path_buf());
-            }
-        }
-        file_paths
-    }
 }
 
 fn main() {
