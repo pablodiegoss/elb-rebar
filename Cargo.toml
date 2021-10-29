@@ -1,9 +1,16 @@
 [package]
-name = "rebar"
-version = "0.1.0"
+name = "elb-rebar"
+version = "0.0.2"
 edition = "2018"
+license = "GPL-3.0-or-later"
+readme = "README.md"
+description = "A parallel AWS Elastic Load Balancing log analyzer for quick statistics on web requests"
+repository = "https://github.com/pablodiegoss/elb-rebar"
+authors=["Pablo Silva <pablodiegoss@hotmail.com>", "Rodrigo Oliveira <rodrigo.redcode@gmail.com>"]
+keywords = ["AWS", "ELB", "logs"]
+categories = ["command-line-utilities"]
+exclude = ["examples/"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 structopt = "0.3.13"
