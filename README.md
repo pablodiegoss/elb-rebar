@@ -38,6 +38,12 @@ $ elb-rebar examples/example1.log
 
 Rebar will count and list all requests registered in your log file or folder (recursively).
 
+You can pass a time filter when passing a folder:
+
+```bash
+$ cargo run --examples --init_time 1135 --end_time 1350
+```
+
 #### Example output
 
 ```
